@@ -1,13 +1,13 @@
-<div id="filmModal" style="display:none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; overflow:auto; background-color: rgba(0,0,0,0.5);">
-    <div style="background-color:#fff; margin: 5% auto; padding:20px; width:90%; max-width:800px; border-radius:5px; position: relative;">
-        <span id="closeFilmModal" style="position:absolute; top:10px; right:15px; font-size:28px; font-weight:bold; cursor:pointer;">&times;</span>
+<div id="filmModal" class="modal">
+    <div class="modal-content">
+        <span id="closeFilmModal" class="close-btn">&times;</span>
         <h2 class="text-center">Gestion des films</h2>
-        <div style="margin-bottom:20px;">
-            <button class="filmTab btn btn-outline-primary" data-tab="addFilmTab">Ajouter</button>
+        <div class="tab-buttons">
+            <button class="filmTab btn btn-outline-primary active" data-tab="addFilmTab">Ajouter</button>
             <button class="filmTab btn btn-outline-primary" data-tab="editFilmTab">Modifier</button>
             <button class="filmTab btn btn-outline-primary" data-tab="deleteFilmTab">Supprimer</button>
         </div>
-        <div id="addFilmTab" class="filmTabContent">
+        <div id="addFilmTab" class="filmTabContent active">
             <h4>Ajouter un film</h4>
             <form action="/controllers/movies/AddMoviesController.php" method="post" enctype="multipart/form-data">
                 <div class="mb-3">
@@ -38,7 +38,7 @@
             </form>
         </div>
 
-        <div id="editFilmTab" class="filmTabContent" style="display:none;">
+        <div id="editFilmTab" class="filmTabContent">
             <h4>Modifier un film</h4>
             <form action="/controllers/movies/EditMovieController.php" method="post" enctype="multipart/form-data">
                 <div class="mb-3">
@@ -73,7 +73,7 @@
             </form>
         </div>
 
-        <div id="deleteFilmTab" class="filmTabContent" style="display:none;">
+        <div id="deleteFilmTab" class="filmTabContent">
             <h4>Supprimer un film</h4>
             <form action="/controllers/movies/DeleteMovieController.php" method="post">
                 <div class="mb-3">

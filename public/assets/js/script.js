@@ -1,85 +1,157 @@
-// Vérification du mot de passe
-$('#password').blur(function() {
-    const password = $(this).val();
-    const errors = validatePassword(password);
-
-    if (errors.length > 0) {
-        let message = "Le mot de passe doit comporter au moins : " + errors.slice(0, -1).join(", ") +
-                      (errors.length > 1 ? " et " : "") + errors.slice(-1);
-        $('#passwordHelp').text(message);
-        $('#registerButton').prop('disabled', true);
-    } else {
-        $('#passwordHelp').text('');
-        $('#registerButton').prop('disabled', false);
-    }
-});
-
-// Vérification de la confirmation du mot de passe
-$('#confirm_password').blur(function() {
-    const password = $('#password').val();
-    const confirmPassword = $(this).val();
-    if (password !== confirmPassword) {
-        $('#confirmPasswordHelp').text('Les mots de passe ne correspondent pas.');
-        $('#registerButton').prop('disabled', true);
-    } else {
-        $('#confirmPasswordHelp').text('');
-        $('#registerButton').prop('disabled', false);
-    }
-});
-
-// Vérification de l'email
-$('#email').blur(function() {
-    const email = $(this).val();
-    $.post('/controllers/auth/CheckEmailController.php', { email: email }, function(response) {
-        if (response.exists) {
-            $('#emailHelp').text('Cette adresse email est déjà utilisée.');
-            $('#registerButton').prop('disabled', true);
-        } else {
-            $('#emailHelp').text('');
-            $('#registerButton').prop('disabled', false);
-        }
-    }, 'json');
-});
-
-// Vérification du nom d'utilisateur
-$('#username').blur(function() {
-    const username = $(this).val();
-    $.post('/controllers/auth/CheckUsernameController.php', { username: username }, function(response) {
-        if (response.exists) {
-            $('#usernameHelp').text('Ce nom d\'utilisateur est déjà utilisé.');
-            $('#registerButton').prop('disabled', true);
-        } else {
-            $('#usernameHelp').text('');
-            $('#registerButton').prop('disabled', false);
-        }
-    }, 'json');
-});
-
-// Fonction de validation du mot de passe
-function validatePassword(password) {
-    const errors = [];
-
-    if (password.length < 8) {
-        errors.push("8 caractères");
-    }
-    if (!/[A-Z]/.test(password)) {
-        errors.push("une majuscule");
-    }
-    if (!/[a-z]/.test(password)) {
-        errors.push("une minuscule");
-    }
-    if (!/[0-9]/.test(password)) {
-        errors.push("un chiffre");
-    }
-    if (!/[\W_]/.test(password)) {
-        errors.push("un caractère spécial");
-    }
-
-    return errors;
-}
-
 document.addEventListener("DOMContentLoaded", function() {
-    // Récupération des éléments de la modale pour les films
+    // Section : Inscription
+
+    // Vérification du mot de passe
+    const passwordInput = document.getElementById('password');
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            const errors = validatePassword(password);
+            const passwordHelp = document.getElementById('passwordHelp');
+
+            if (errors.length > 0) {
+                let message = "Le mot de passe doit comporter au moins : " + errors.slice(0, -1).join(", ") +
+                              (errors.length > 1 ? " et " : "") + errors.slice(-1);
+                passwordHelp.textContent = message;
+            } else {
+                passwordHelp.textContent = '';
+            }
+
+            checkPasswordMatch();
+            checkFormValidity();
+        });
+    }
+
+    // Vérification de la confirmation du mot de passe
+    const confirmPasswordInput = document.getElementById('confirm_password');
+    if (confirmPasswordInput) {
+        confirmPasswordInput.addEventListener('input', function() {
+            checkPasswordMatch();
+            checkFormValidity();
+        });
+    }
+
+    // Vérification de l'email
+    const emailInput = document.getElementById('email');
+    if (emailInput) {
+        emailInput.addEventListener('blur', function() {
+            const email = this.value;
+            fetch('/controllers/auth/CheckEmailController.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'email=' + encodeURIComponent(email)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const emailHelp = document.getElementById('emailHelp');
+                if (data.exists) {
+                    emailHelp.textContent = 'Cette adresse email est déjà utilisée.';
+                } else {
+                    emailHelp.textContent = '';
+                }
+                checkFormValidity();
+            });
+        });
+    }
+
+    // Vérification du nom d'utilisateur
+    const usernameInput = document.getElementById('username');
+    if (usernameInput) {
+        usernameInput.addEventListener('blur', function() {
+            const username = this.value;
+            fetch('/controllers/auth/CheckUsernameController.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'username=' + encodeURIComponent(username)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const usernameHelp = document.getElementById('usernameHelp');
+                if (data.exists) {
+                    usernameHelp.textContent = 'Ce nom d\'utilisateur est déjà utilisé.';
+                } else {
+                    usernameHelp.textContent = '';
+                }
+                checkFormValidity();
+            });
+        });
+    }
+
+    // Fonction pour vérifier la correspondance des mots de passe
+    function checkPasswordMatch() {
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        const confirmPasswordHelp = document.getElementById('confirmPasswordHelp');
+
+        if (password !== confirmPassword) {
+            confirmPasswordHelp.textContent = 'Les mots de passe ne correspondent pas.';
+        } else {
+            confirmPasswordHelp.textContent = '';
+        }
+    }
+
+    // Fonction de validation du mot de passe
+    function validatePassword(password) {
+        const errors = [];
+
+        if (password.length < 8) {
+            errors.push("8 caractères");
+        }
+        if (!/[A-Z]/.test(password)) {
+            errors.push("une majuscule");
+        }
+        if (!/[a-z]/.test(password)) {
+            errors.push("une minuscule");
+        }
+        if (!/[0-9]/.test(password)) {
+            errors.push("un chiffre");
+        }
+        if (!/[\W_]/.test(password)) {
+            errors.push("un caractère spécial");
+        }
+
+        return errors;
+    }
+
+    // Fonction pour vérifier si tous les champs sont valides
+    function checkFormValidity() {
+        const registerButton = document.querySelector('button[name="register"]');
+        const formFields = document.querySelectorAll('#registerForm input, #registerForm textarea');
+        let isValid = true;
+
+        formFields.forEach(function(field) {
+            if (!field.value ||
+                (field.id === 'password' && validatePassword(field.value).length > 0) ||
+                (field.id === 'confirm_password' && field.value !== document.getElementById('password').value) ||
+                (field.id === 'username' && document.getElementById('usernameHelp').textContent) ||
+                (field.id === 'email' && document.getElementById('emailHelp').textContent)) {
+                isValid = false;
+            }
+        });
+
+        registerButton.disabled = !isValid;
+    }
+
+    // Fonction pour masquer le message de succès après 5 secondes
+    function hideSuccessMessage() {
+        const successPopup = document.getElementById('successPopup');
+
+        if (successPopup) {
+            setTimeout(function() {
+                successPopup.style.display = 'none';
+            }, 3500);
+        }
+    }
+
+    // Appeler la fonction pour masquer le message de succès
+    hideSuccessMessage();
+
+    // Section : Modale de gestion des films
+
     const filmModal = document.getElementById("filmModal");
     const openFilmModalBtn = document.getElementById("openFilmModal");
     const closeFilmModalBtn = document.getElementById("closeFilmModal");
@@ -87,14 +159,18 @@ document.addEventListener("DOMContentLoaded", function() {
     const filmTabContents = document.querySelectorAll(".filmTabContent");
 
     // Ouvrir la modale des films
-    openFilmModalBtn.addEventListener("click", function() {
-        filmModal.style.display = "block";
-    });
+    if (openFilmModalBtn) {
+        openFilmModalBtn.addEventListener("click", function() {
+            filmModal.style.display = "block";
+        });
+    }
 
     // Fermer la modale des films lorsqu'on clique sur la croix
-    closeFilmModalBtn.addEventListener("click", function() {
-        filmModal.style.display = "none";
-    });
+    if (closeFilmModalBtn) {
+        closeFilmModalBtn.addEventListener("click", function() {
+            filmModal.style.display = "none";
+        });
+    }
 
     // Fermer la modale des films lorsqu'on clique en dehors du contenu
     window.addEventListener("click", function(event) {
@@ -118,7 +194,8 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 
-    // Récupération des éléments de la modale pour les séances
+    // Section : Modale de gestion des séances
+
     const sessionModal = document.getElementById("sessionModal");
     const openSessionModalBtn = document.getElementById("openSessionModal");
     const closeSessionModalBtn = document.getElementById("closeSessionModal");
@@ -126,14 +203,18 @@ document.addEventListener("DOMContentLoaded", function() {
     const sessionTabContents = document.querySelectorAll(".sessionTabContent");
 
     // Ouvrir la modale des séances
-    openSessionModalBtn.addEventListener("click", function() {
-        sessionModal.style.display = "block";
-    });
+    if (openSessionModalBtn) {
+        openSessionModalBtn.addEventListener("click", function() {
+            sessionModal.style.display = "block";
+        });
+    }
 
     // Fermer la modale des séances lorsqu'on clique sur la croix
-    closeSessionModalBtn.addEventListener("click", function() {
-        sessionModal.style.display = "none";
-    });
+    if (closeSessionModalBtn) {
+        closeSessionModalBtn.addEventListener("click", function() {
+            sessionModal.style.display = "none";
+        });
+    }
 
     // Fermer la modale des séances lorsqu'on clique en dehors du contenu
     window.addEventListener("click", function(event) {
