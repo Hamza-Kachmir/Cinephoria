@@ -1,54 +1,32 @@
 <?php
 session_start();
-require_once 'assets/core/config.php';
-require_once 'models/movie.php';
+require_once __DIR__ . '/config/config.php';
 
-$page = isset($_GET['page']) ? $_GET['page'] : 'cinemas'; // Par défaut, redirige vers la page "cinemas"
+$route = $_GET['route'] ?? 'home';
 
-// Charger les films disponibles
-$movieModel = new Movie($dbo);
-$movies = $movieModel->getAllMovies();
+include __DIR__ . '/public/core/header.php';
 
-switch ($page) {
-    case 'cinemas':
-        include 'views/cinemas.php';
-        break;
-    case 'cinema_details':
-        include 'views/cinema_details.php';
-        break;
-    case 'movies':
-        include 'views/movies.php';
-        break;
-    case 'reservations':
-        include 'views/reservations.php';
-        break;
-    case 'contact':
-        include 'views/contact.php';
-        break;
-    case 'register':
-        include 'views/auth/register.php';
+switch ($route) {
+    case 'home':
+        require_once __DIR__ . '/views/homepage.php';
         break;
     case 'login':
-        include 'views/auth/login.php';
+        require_once __DIR__ . '/controllers/auth/LoginController.php';
         break;
-    case 'profile':
-        if (isset($_SESSION['user_id']) && $_SESSION['user_role'] === 'user') {
-            include 'views/profile.php';
-        } else {
-            header('Location: login.php');
-            exit;
-        }
+    case 'register':
+        require_once __DIR__ . '/controllers/auth/RegisterController.php';
         break;
     case 'dashboard':
-        if (isset($_SESSION['user_id']) && ($_SESSION['user_role'] === 'admin' || $_SESSION['user_role'] === 'employee')) {
-            include 'views/dashboard.php';
-        } else {
-            header('Location: login.php');
-            exit;
-        }
+        require_once __DIR__ . '/views/dashboard/dashboard.php';
+        break;
+    case 'profile':
+        require_once __DIR__ . '/views/profile.php';
         break;
     default:
-        include 'views/404.php';
+        http_response_code(404);
+        echo "<div class='container mt-5'><h1 class='text-center'>404 Not Found</h1></div>";
         break;
 }
+
+include __DIR__ . '/public/core/footer.php';
 ?>
